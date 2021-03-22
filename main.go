@@ -17,13 +17,17 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func cleanName(s string) string {
+func removeAccents(s string) string {
 	transformer := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	result, _, err := transform.String(transformer, s)
 	if err != nil {
 		panic(err)
 	}
-	result = strings.TrimSpace(result)
+	return result
+}
+
+func replaceSpaces(s string) string {
+	result := strings.TrimSpace(s)
 	result = strings.ReplaceAll(result, " ", "_")
 	for strings.Contains(result, "__") {
 		result = strings.ReplaceAll(result, "__", "_")
@@ -34,7 +38,8 @@ func cleanName(s string) string {
 var helper bool
 var subdirs bool
 var input string
-var clean bool
+var accents bool
+var spaces bool
 
 func process(origin string) {
 	info, err := os.Stat(origin)
@@ -54,8 +59,11 @@ func process(origin string) {
 		fmt.Println("File: " + origin)
 		oldName := info.Name()
 		newName := oldName
-		if clean {
-			newName = cleanName(newName)
+		if accents {
+			newName = removeAccents(newName)
+		}
+		if spaces {
+			newName = replaceSpaces(newName)
 		}
 		if newName == oldName {
 			fmt.Println("Nothing to do.")
@@ -86,7 +94,8 @@ func main() {
 	flag.BoolVar(&helper, "h", false, "Show the help.")
 	flag.BoolVar(&subdirs, "s", false, "Process the subdirs also.")
 	flag.StringVar(&input, "i", ".", "File or folder to be processed.")
-	flag.BoolVar(&clean, "c", false, "Clean accents and spaces from name.")
+	flag.BoolVar(&accents, "a", false, "Remove accents from name.")
+	flag.BoolVar(&spaces, "s", false, "Replace spaces to underscores.")
 	flag.Parse()
 	if helper {
 		fmt.Printf("Usage of %s:\n", os.Args[0])
