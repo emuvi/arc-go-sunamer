@@ -21,7 +21,8 @@ func removeAccents(s string) string {
 	transformer := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	result, _, err := transform.String(transformer, s)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return s
 	}
 	return result
 }
@@ -44,13 +45,15 @@ var spaces bool
 func process(origin string) {
 	info, err := os.Stat(origin)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	if info.IsDir() && subdirs {
 		fmt.Println("Folder: " + origin)
 		files, err := ioutil.ReadDir(origin)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			return
 		}
 		for _, inside := range files {
 			process(path.Join(origin, inside.Name()))
