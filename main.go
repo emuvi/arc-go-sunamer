@@ -78,7 +78,7 @@ func process(origin string) {
 					index++
 					extension := filepath.Ext(newName)
 					justName := newName[0 : len(newName)-len(extension)]
-					destiny = path.Join(root, justName+" ("+strconv.Itoa(index)+")"+extension)
+					destiny = path.Join(root, justName+"("+strconv.Itoa(index)+")"+extension)
 				}
 			}
 			fmt.Println(destiny)
