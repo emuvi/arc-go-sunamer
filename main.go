@@ -84,7 +84,7 @@ func process(origin string) {
 			fmt.Println(destiny)
 			err := os.Rename(origin, destiny)
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 			}
 		}
 	}
