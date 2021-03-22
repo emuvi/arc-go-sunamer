@@ -92,7 +92,7 @@ func process(origin string) {
 
 func main() {
 	flag.BoolVar(&helper, "h", false, "Show the help.")
-	flag.BoolVar(&subdirs, "s", false, "Process the subdirs also.")
+	flag.BoolVar(&subdirs, "d", false, "Process the subdirs also.")
 	flag.StringVar(&input, "i", ".", "File or folder to be processed.")
 	flag.BoolVar(&accents, "a", false, "Remove accents from name.")
 	flag.BoolVar(&spaces, "s", false, "Replace spaces to underscores.")
