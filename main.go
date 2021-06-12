@@ -17,32 +17,12 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func removeAccents(s string) string {
-	transformer := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
-	result, _, err := transform.String(transformer, s)
-	if err != nil {
-		log.Println(err)
-		return s
-	}
-	return result
-}
-
-func replaceSpaces(s string) string {
-	result := strings.TrimSpace(s)
-	result = strings.ReplaceAll(result, " ", "_")
-	for strings.Contains(result, "__") {
-		result = strings.ReplaceAll(result, "__", "_")
-	}
-	return result
-}
-
 var helper bool
 var subdirs bool
-var input string
-var accents bool
-var spaces bool
+var remove_accents bool
+var spaces_to_underscores bool
 
-func process(origin string) {
+func sunamer(origin string) {
 	info, err := os.Stat(origin)
 	if err != nil {
 		log.Println(err)
@@ -56,17 +36,17 @@ func process(origin string) {
 			return
 		}
 		for _, inside := range files {
-			process(path.Join(origin, inside.Name()))
+			sunamer(path.Join(origin, inside.Name()))
 		}
 	} else {
 		fmt.Println("File: " + origin)
 		oldName := info.Name()
 		newName := oldName
-		if accents {
-			newName = removeAccents(newName)
+		if remove_accents {
+			newName = doRemoveAccents(newName)
 		}
-		if spaces {
-			newName = replaceSpaces(newName)
+		if spaces_to_underscores {
+			newName = doSpacesToUnderscores(newName)
 		}
 		if newName == oldName {
 			fmt.Println("Nothing to do.")
@@ -94,16 +74,41 @@ func process(origin string) {
 }
 
 func main() {
-	flag.BoolVar(&helper, "h", false, "Show the help.")
-	flag.BoolVar(&subdirs, "d", false, "Process the subdirs also.")
-	flag.StringVar(&input, "i", ".", "File or folder to be processed.")
-	flag.BoolVar(&accents, "a", false, "Remove accents from name.")
-	flag.BoolVar(&spaces, "s", false, "Replace spaces to underscores.")
+	flag.BoolVar(&helper, "h", false, "Show the usage help message.")
+	flag.BoolVar(&subdirs, "d", false, "Sunamer in the subdirectories.")
+	flag.BoolVar(&remove_accents, "ra", false, "Remove accents from name.")
+	flag.BoolVar(&spaces_to_underscores, "su", false, "Replace spaces to underscores.")
 	flag.Parse()
 	if helper {
-		fmt.Printf("Usage of %s:\n", os.Args[0])
+		fmt.Printf("Usage of sunamer [OPTION]... [INPUT]...\n")
 		flag.PrintDefaults()
-		return
+		os.Exit(0)
 	}
-	process(input)
+	args := flag.Args()
+	if len(args) == 0 {
+		fmt.Println("You must pass at least one input file.")
+		os.Exit(-1)
+	}
+	for _, input := range args {
+		sunamer(input)
+	}
+}
+
+func doRemoveAccents(s string) string {
+	transformer := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	result, _, err := transform.String(transformer, s)
+	if err != nil {
+		log.Println(err)
+		return s
+	}
+	return result
+}
+
+func doSpacesToUnderscores(s string) string {
+	result := strings.TrimSpace(s)
+	result = strings.ReplaceAll(result, " ", "_")
+	for strings.Contains(result, "__") {
+		result = strings.ReplaceAll(result, "__", "_")
+	}
+	return result
 }
